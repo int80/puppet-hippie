@@ -19,6 +19,9 @@ DAEMON_ARGS="-s Feersum --port $PORT -E deployment /home/eventd/hippie.psgi >> /
 #PIDFILE=/var/run/$NAME/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
+# user:group to run as
+CHUSER="$USER:$GROUP"
+
 [ -x $DAEMON ] || exit 0
 
 . /lib/init/vars.sh

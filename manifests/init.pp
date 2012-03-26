@@ -25,6 +25,17 @@ class hippie {
       managehome => true;
   }
 
+  psgi::app {
+    "hippie":
+      path => "/home/eventd",
+      port => 6000,
+      psgi => "hippie.psgi",
+      owner => eventd,
+      group => eventd,
+      appmodule => 'Web::Hippie::PubSub',
+      server => 'Feersum';
+  }
+      
   file {
     "/home/eventd/zeromq_2.1.10-1_amd64.deb":
       require => User['eventd'],
@@ -35,13 +46,8 @@ class hippie {
       require => User['eventd'],
       content => template("hippie/hippie.psgi.erb");
 
-    "/etc/init.d/hippie":
-      source => "puppet:///modules/hippie/init",
-      mode => 0755;
-
-    "/var/log/hippie":
-      mode => 0755,
-      owner => 'eventd',
-      ensure => 'directory';
+    #"/etc/init.d/hippie":
+    #  source => "puppet:///modules/hippie/init",
+    #  mode => 0755;
   }
 }
