@@ -1,0 +1,93 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          hippie
+# Required-Start:    $network $remote_fs $local_fs 
+# Required-Stop:     $network $remote_fs $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Stop/start hippie
+### END INIT INFO
+
+USER=eventd
+PATH=/home/eventd/perl5/bin/:/sbin:/usr/sbin:/bin:/usr/bin
+DESC=hippie
+NAME=hippie
+#CONFFILE=/etc/nginx/nginx.conf
+DAEMON=/home/eventd/perl5/bin/plackup
+DAEMON_ARGS="-s Feersum --port 6000 -Ilib -E deployment /home/eventd/hippie.psgi >> /var/log/hippie/hippie.log 2>>/var/log/hippie/error.log &"
+#PIDFILE=/var/run/$NAME/$NAME.pid
+SCRIPTNAME=/etc/init.d/$NAME
+
+[ -x $DAEMON ] || exit 0
+
+. /lib/init/vars.sh
+
+. /lib/lsb/init-functions
+
+do_start()
+{
+    su - eventd -s /bin/bash -c "nohup /home/eventd/perl5/bin/plackup $DAEMON_ARGS"
+
+    pgrep -f $DAEMON > /dev/null
+    if [ $? -ne 1 ] ; then
+     echo "hippie started"
+     return 0
+    fi
+
+    RETVAL="$?"
+    return "$RETVAL"
+}
+
+do_stop()
+{
+    pgrep -f $DAEMON > /dev/null
+    if [ $? -ne 0 ] ; then
+     echo "hippie not running"
+     return 1
+    fi
+
+    echo -n "Stopping $NAME: "
+    PID=`pgrep -f $DAEMON`
+    kill -9 $PID
+    pgrep -f $DAEMON > /dev/null
+    if [ $? -ne 0 ] ; then
+     echo "hippie stopped"
+     return 0
+    else
+     echo "hippie not running, didnt stop "
+     return 1
+    fi
+}
+
+case "$1" in
+    start)
+        log_daemon_msg "Starting $DESC "
+        do_start
+        case "$?" in
+            0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+            2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
+        ;;
+    stop)
+        [ "$VERBOSE" != no ] && log_daemon_msg "Stopping $DESC" "$NAME"
+        do_stop
+        case "$?" in
+            0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
+            2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;
+        esac
+        ;;
+  status)
+        status_of_proc "$DAEMON" "$NAME" && exit 0 || exit $?
+        ;;
+  restart)
+        $0 stop
+        sleep 2
+        $0 start
+        ;;
+    *)
+        echo "Usage: $SCRIPTNAME {start|stop|status|restart|}" >&2
+        exit 3
+        ;;
+esac
+
+exit $RETVAL
