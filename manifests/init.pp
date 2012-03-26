@@ -38,5 +38,10 @@ class hippie {
     "/etc/init.d/hippie":
       source => "puppet:///modules/hippie/init",
       mode => 0755;
+
+    "/var/log/hippie":
+      mode => 0755,
+      owner => 'eventd',
+      ensure => 'directory';
   }
 }

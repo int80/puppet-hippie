@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          hippie
 # Required-Start:    $network $remote_fs $local_fs 
@@ -14,7 +14,8 @@ DESC=hippie
 NAME=hippie
 #CONFFILE=/etc/nginx/nginx.conf
 DAEMON=/home/eventd/perl5/bin/plackup
-DAEMON_ARGS="-s Feersum --port 6000 -Ilib -E deployment /home/eventd/hippie.psgi >> /var/log/hippie/hippie.log 2>>/var/log/hippie/error.log &"
+PORT=6000
+DAEMON_ARGS="-s Feersum --port $PORT -E deployment /home/eventd/hippie.psgi >> /var/log/hippie/hippie.log 2>>/var/log/hippie/error.log &"
 #PIDFILE=/var/run/$NAME/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
 
@@ -23,6 +24,16 @@ SCRIPTNAME=/etc/init.d/$NAME
 . /lib/init/vars.sh
 
 . /lib/lsb/init-functions
+
+# perl5 lib in homedir?
+eval PERLLOCAL=~$USER/perl5
+if [[ -d "$PERLLOCAL" ]]; then
+    export PERL_LOCAL_LIB_ROOT="$PERLLOCAL";
+    export PERL_MB_OPT="--install_base $PERLLOCAL";
+    export PERL_MM_OPT="INSTALL_BASE=$PERLLOCAL";
+    export PERL5LIB="$PERLLOCAL/lib/perl5/x86_64-linux-gnu-thread-multi:$PERLLOCAL/lib/perl5";
+    export PATH="$PERLLOCAL/bin:$PATH";
+fi
 
 do_start()
 {
